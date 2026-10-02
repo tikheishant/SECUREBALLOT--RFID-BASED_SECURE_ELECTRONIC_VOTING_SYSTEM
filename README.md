@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 🗳️️ SecureBallot — RFID-Based Electronic Voting System
+# 🗳️️ SecureBallot : RFID-Based Electronic Voting System
 
 **An embedded voting system prototype engineered with ARM7 LPC2148 and Embedded C**
 
