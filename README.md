@@ -199,6 +199,7 @@ SecureBallot-System/
 ---
 
 ## 🧭 System Workflow
+<img width="1400" height="800" alt="WhatsApp Image 2026-10-03 at 12 50 18 AM" src="https://github.com/user-attachments/assets/50205ccc-ac71-440f-9704-5588d452eed6" />
 
 ### 👮 Officer Workflow
 
