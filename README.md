@@ -1,311 +1,364 @@
-# 🗳️ SecureBallot --- RFID-Based Electronic Voting System
 
-**An embedded voting-system prototype built with ARM7 LPC2148 and
-Embedded C.**
+# SECURE_BALLOT_RFID_ELECTRONIC_VOTING_SYSTEM
+To develop a secure, automated, and tamper-resistant RFID-based Electronic Voting System (EVS) using the ARM7 LPC2148 microcontroller, providing separate authenticated interfaces for Election Officers and Voters with persistent I²C EEPROM storage and real-time election timing.
 
-RFID authentication • Password protection • EEPROM data storage •
-RTC-based election timing
+<div align="center">
 
-------------------------------------------------------------------------
+# 🗳️️ SecureBallot — RFID-Based Electronic Voting System
 
-## 📌 Project Overview
+**An embedded voting system prototype engineered with ARM7 LPC2148 and Embedded C**
 
-**SecureBallot** is an RFID-based electronic voting system prototype
-developed using the **ARM7 LPC2148 microcontroller** and **Embedded C**.
-It provides separate interfaces for election officers and voters,
-helping manage voter authentication, vote recording, and result display
-in one embedded system.
+[![Platform](https://img.shields.io/badge/Platform-LPC2148%20ARM7-blue?style=for-the-badge&logo=arm)](https://www.nxp.com)
+[![Protocol](https://img.shields.io/badge/Protocol-I%C2%B2C%20%7C%20UART-red?style=for-the-badge)](https://en.wikipedia.org/wiki/I%C2%B2C)
+[![Language](https://img.shields.io/badge/Language-Embedded%20C-brightgreen?style=for-the-badge&logo=c)](https://en.wikipedia.org/wiki/Embedded_C)
+[![IDE](https://img.shields.io/badge/IDE-Keil%20%C2%B5Vision-orange?style=for-the-badge)](https://www.keil.com/)
+[![Status](https://img.shields.io/badge/Status-Complete-success?style=for-the-badge)]()
 
-The officer can manage voter records, configure election timings, view
-results, reset election data, and update the officer password. A
-registered voter authenticates using an RFID card and password, then
-selects a party/candidate through the keypad. Voter status and
-party-wise vote counts are stored in external I²C EEPROM.
+</div>
 
-> **Note:** SecureBallot is an academic/embedded-systems prototype, not
-> a certified or production-ready election system. Real elections
-> require independent security assessment, tamper resistance,
-> auditability, accessibility, and compliance with applicable
-> regulations.
+---
+
+## 📌 Overview
+
+**SecureBallot** is a real-time embedded application engineered to secure, automate, and streamline electoral operations. Built on the **NXP LPC2148 ARM7TDMI-S microcontroller**, it integrates RFID card authentication, matrix keypad password protection, I²C external EEPROM storage, an RTC clock, and an LCD dashboard interface to manage everything from voter registration to real-time vote tallying and tie detection.
+
+The system enforces strict multi-role separation between **Election Officers** (admin operational mode) and **Voters** (polling mode), ensuring one-vote-per-voter enforcement backed by non-volatile storage.
+
+> 💡 **Disclaimer:** *SecureBallot is an academic/embedded-systems prototype designed to demonstrate multi-peripheral interfacing, state machines, and non-volatile data management. Real elections require independent security assessments, tamper resistance, and formal regulatory compliance.*
+
+---
 
 ## ✨ Features
 
-### Officer Interface
+### 👮 Officer Interface (Administrative Mode)
+* 🔐 **Dual-Factor Authentication:** Verified via Officer RFID card and a 4-digit security password.
+* 👥 **Voter Management:** Add new voter records, remove existing voters, or reactivate previously deactivated voters.
+* ⏱️ **Election Schedule Control:** Set exact election start and stop times using the internal RTC.
+* 📊 **Result Tallying & Tie Detection:** Automatically computes winner party counts and detects ties among leading candidates.
+* 🧹 **System Reset:** Clear all cast votes and reset voter status flags for a new election cycle.
+* 🔑 **Credential Management:** Change administrative officer password stored in persistent EEPROM.
 
--   Officer RFID-card verification
--   Password-based officer authentication
--   Add, remove, and reactivate voter records
--   Configure election start and stop times
--   View party-wise vote counts and results
--   Detect ties between parties with the highest vote count
--   Reset vote counts and voter voting-status flags
--   Change the officer password
+### 🗳️ Voter Interface (Polling Mode)
+* 🪪 **RFID Identification:** Instant voter verification via EM-18 RFID reader on UART.
+* 🛑 **Anti-Double Voting Guard:** Checks EEPROM active status flags to prevent duplicate votes.
+* 🔐 **Password Verification:** 4-digit voter PIN authentication prior to ballot access.
+* 🗳️ **Multi-Party Ballot:** Supports selection across up to **8 registered parties/candidates**.
+* ✅ **Vote Confirmation:** Interactive menu prompt to confirm candidate selection before committing to EEPROM.
+* 🔑 **PIN Management:** Change voter PIN securely after authentication.
 
-### Voter Interface
+### ⚙️ Embedded Systems Integration
+* 📡 **UART Dual-Port Operations:** UART1 for RFID card scanning; UART0 for event logging & telemetry.
+* 💾 **I²C Serial EEPROM Interface:** High-endurance AT24C256 communication for non-volatile record storage.
+* ⏱️ **RTC Time Management:** Real-time clock syncing for automated election start/stop windows.
 
--   RFID-based voter identification
--   Check whether a voter record is active
--   Check whether the voter has already voted
--   Password authentication
--   Select from up to **8 parties/candidates**
--   Confirm a vote before recording it
--   Change the voter password
--   Prevent a second vote by updating the voter's voting-status flag
+---
 
-### Embedded Features
+## 🚦 System Security & State Logic
 
--   UART-based RFID data reception
--   I²C EEPROM read/write operations
--   LCD-based menus and status messages
--   4×4 matrix keypad input
--   RTC-based time handling
--   Party-wise vote-count storage
--   UART0 event logging
 
-## 🧰 Hardware Components
+```
 
-  Component                      Purpose
-  ------------------------------ ------------------------------------
-  LPC2148 ARM7 microcontroller   Main controller
-  RFID reader and cards          Officer/voter identification
-  LCD                            Menus, prompts, and results
-  4×4 matrix keypad              Password and menu input
-  AT24C256 I²C EEPROM            Persistent voter and election data
-  RTC module                     Election time handling
-  Supporting circuitry           Power and module interfacing
+Voter Authentication State                 System Action & Response
+──────────────────────────────────────     ──────────────────────────────────────────────────
+RFID Card Scanned                     →    Read 10-Byte Card ID via UART1
+Card Found in EEPROM                  →    Check Active Flag (+0x0F)
+Active Flag == 0x00 (Inactive)        →    🔴 Display "VOTER INACTIVE" & Reject
+Active Flag == 0x01 (Active)          →    Check Voted Flag (+0x0E)
+Voted Flag == 0x01 (Already Voted)    →    🔴 Display "ALREADY VOTED" & Reject
+Voted Flag == 0x00 (Not Voted)        →    🟡 Prompt for 4-Digit Voter PIN
+PIN Correct                           →    🟢 Grant Ballot Access → Record Vote → Mark Flag
 
-*Confirm the exact LCD size, RFID reader model, and RTC part number
-against your final hardware before publishing.*
+```
 
-## 💻 Software and Tools
+---
 
--   **Language:** Embedded C
--   **Microcontroller:** NXP LPC2148 (ARM7TDMI-S)
--   **IDE/Compiler:** Keil µVision
--   **Simulation:** Proteus, if used
--   **Interfaces:** UART, I²C, GPIO
--   **Peripherals:** LCD, keypad, RFID reader, RTC, external EEPROM
+## 🏗️ System Architecture
+
+<div align="center">
+
+
+```
+
+```
+                    +---------------------------------------+
+                    |      NXP LPC2148 Microcontroller      |
+                    |            (ARM7TDMI-S Core)          |
+                    +---+-------+-------+-------+-------+---+
+                        |       |       |       |       |
+  +---------------------+       |       |       |       +---------------------+
+  | (UART1)                     |       |       |                     (UART0) |
+  v                             v       v       v                             v
+
+```
+
++-----------+                 +---------+ +---+ +-------+                   +-----------+
+| EM-18     |                 |  20x4   | |4x4| | RTC   |                   |  UART0    |
+| RFID      |                 | Character | |Key| |Clock  |                   | System    |
+| Reader    |                 |  LCD    | |pad| |Module |                   | Event Log |
++-----------+                 +---------+ +---+ +-------+                   +-----------+
+|
+| (I²C Bus)
+v
++-----------+
+| AT24C256  |
+| External  |
+| I²C EEPROM|
++-----------+
+
+```
+
+</div>
+
+---
+
+## 🔌 Hardware Components
+
+| # | Component | Model / Spec | Purpose |
+|---|---|---|---|
+| 1 | Microcontroller | NXP LPC2148 (ARM7TDMI-S, 60 MHz) | Core processing and peripheral orchestration |
+| 2 | RFID Reader | EM-18 RFID Module (9600 Baud, UART) | Officer and voter RFID tag scanning |
+| 3 | Storage | AT24C256 Serial I²C EEPROM | Persistent storage for records, flags, and vote counts |
+| 4 | User Display | 20×4 Character LCD (HD44780 Driver) | Interactive menus, status prompts, and result display |
+| 5 | Input Interface | 4×4 Matrix Keypad | Password entry, menu navigation, and candidate selection |
+| 6 | Real-Time Clock | LPC2148 On-Chip RTC / External DS1307 | Election timing, start/stop logic |
+| 7 | Serial Interface | USB-to-UART Bridge (UART0) | Real-time system logging and event debugging |
+
+---
+
+## 📍 Pin Configuration
+
+### GPIO & Communication Peripherals
+
+| Peripheral | LPC2148 Pin | Function / Target Line |
+|---|---|---|
+| **UART1 (RFID)** | P0.8 / RxD1 | Connected to EM-18 TX pin |
+| **UART0 (Logging)** | P0.0 / TxD0 | Serial terminal output (9600 baud) |
+| **I²C0 (EEPROM)** | P0.2 / SCL0 | Serial Clock for AT24C256 |
+| | P0.3 / SDA0 | Serial Data for AT24C256 |
+| **20x4 LCD** | P0.8 – P0.15 | LCD 8-bit Data Bus (D0–D7) |
+| | P0.16 | LCD Register Select (RS) |
+| | P0.17 | LCD Enable (EN) |
+| **4x4 Keypad** | P1.16 – P1.19 | Keypad Row Outputs (Row 0 – Row 3) |
+| | P1.20 – P1.23 | Keypad Column Inputs (Col 0 – Col 3) |
+
+---
+
+## 🗃️ EEPROM Memory Mapping
+
+The external AT24C256 EEPROM stores administrative credentials, voter records, election scheduling, and vote counts. Voter records follow a strict **20-byte record layout**:
+
+
+```
+
+Record Offset        Size (Bytes)        Stored Information
+────────────────     ────────────        ───────────────────────────────────────
++0x00                10 Bytes            Voter RFID Tag ID
++0x0A                 4 Bytes            Voter 4-Digit Password PIN
++0x0E                 1 Byte             Voting-Status Flag (0x00: No, 0x01: Voted)
++0x0F                 1 Byte             Active Status Flag (0x01: Active, 0x00: Removed)
++0x10                 4 Bytes            Reserved / Future Metadata
+
+```
+
+---
+
+## 📁 Project Structure
+
+
+```
+
+SecureBallot-System/
+│
+├── inc/                          ← Header files & driver APIs
+│   ├── types.h                   ← Custom data type definitions (u8, u16, u32)
+│   ├── defines.h                 ← Bitwise manipulation macros
+│   ├── uart1.h                   ← RFID UART1 communication interface
+│   ├── uart0.h                   ← Logging & debugging UART0 interface
+│   ├── i2c.h                     ← I²C protocol driver API
+│   ├── i2c_eeprom.h              ← AT24C256 EEPROM read/write routines
+│   ├── lcd.h                     ← 20x4 LCD display driver API
+│   ├── kpm.h                     ← 4x4 Matrix keypad scanner API
+│   ├── password.h                ← Password entry & masked verification API
+│   └── data_location_defines.h   ← EEPROM address offsets and status flags
+│
+├── src/                          ← Peripheral driver implementations
+│   ├── uart1.c                   ← RFID packet reception routines
+│   ├── uart0.c                   ← Serial log transmitter
+│   ├── i2c.c                     ← I²C bus start/stop/ack primitives
+│   ├── i2c_eeprom.c              ← Byte and page read/write routines
+│   ├── lcd.c                     ← HD44780 LCD control routines
+│   ├── kpm.c                     ← Keypad scan & debounce logic
+│   └── password.c                ← Masked PIN handling & verification
+│
+├── apps/                         ← User & Administrative Interfaces
+│   ├── Officer_interface.c       ← Administrative menu, timing, & tallying
+│   ├── Voter_interface.c         ← Voter verification, voting menu, & flag updates
+│   └── main.c                    ← System initialization & main event loop
+│
+└── Makefile / .uvproj            ← Keil µVision Build Configuration
+
+```
+
+---
 
 ## 🧭 System Workflow
 
-### Officer workflow
+### 👮 Officer Workflow
 
-``` text
+
+```
+
 Officer RFID Card
-       |
-       v
+│
+v
 Receive RFID Data (UART1)
-       |
-       v
+│
+v
 Verify Officer RFID
-       |
-       v
+│
+v
 Enter Officer Password
-       |
-       v
+│
+v
 Officer Menu
-  |       |        |         |         |
-  v       v        v         v         v
-Manage  Set Time  View     Reset    Change
-Voters            Result   Election Password
+│        │        │         │         │
+v        v        v         v         v
+Manage   Set Time  View     Reset     Change
+Voters            Result   Election  Password
+
 ```
 
-### Voter workflow
+### 🗳️ Voter Workflow
 
-``` text
+
+```
+
 Voter RFID Card
-       |
-       v
+│
+v
 Receive and Identify Card
-       |
-       v
+│
+v
 Find Voter Record in EEPROM
-       |
-       v
+│
+v
 Check Active Status
-       |
-       v
+│
+v
 Check Voting Status
-       |
-       v
+│
+v
 Enter Voter Password
-       |
-       v
+│
+v
 Voter Menu
-       |
-       v
+│
+v
 Select Party/Candidate
-       |
-       v
+│
+v
 Confirm Vote
-       |
-       v
+│
+v
 Increment Party Count in EEPROM
-       |
-       v
+│
+v
 Mark Voter as Already Voted
+
 ```
 
-## 🗃️ Data Storage
+---
 
-The external EEPROM stores officer credentials, voter records, voter
-status flags, election timing data, and party-wise vote counts.
+## 💻 Software and Tools
 
-The voter record is designed around a **20-byte record layout**:
+| Tool / Software | Purpose / Details |
+|---|---|
+| **IDE** | Keil µVision 4 / 5 (ARM-MDK) |
+| **Compiler** | Keil ARM C Compiler |
+| **Microcontroller** | NXP LPC2148 (ARM7TDMI-S @ 60 MHz) |
+| **Simulation Tool** | Proteus VSM (Simulation & Circuit Verification) |
+| **Flash Tool** | Flash Magic (UART0 ISP Flashing) |
+| **Language** | Embedded C |
 
-  Offset          Size Stored information
-  --------- ---------- ---------------------
-  `+0x00`     10 bytes Voter ID field
-  `+0x0A`      4 bytes Voter password
-  `+0x0E`       1 byte Voting-status flag
-  `+0x0F`       1 byte Active/removed flag
-  `+0x10`      4 bytes Reserved
-
-The exact byte representation depends on the implementation. Review
-EEPROM address definitions and read/write routines together when
-changing this layout.
-
-## 🧩 Main Modules
-
-Module names may differ depending on the final source-tree organization.
-
-  Module / Function           Responsibility
-  --------------------------- -----------------------------------------------
-  `Officer_interface.c`       Officer menu and administrative operations
-  `Voter_interface.c`         Voter authentication and voter menu
-  `UART1.c`                   RFID data reception
-  `UART.c`                    UART0 communication and logging
-  `I2C.c`                     I²C communication
-  `i2c_eeprom.c`              EEPROM read/write operations
-  `lcd.c`                     LCD commands and display routines
-  `KPM.c`                     Keypad scanning
-  `Password.c`                Password entry and password-related functions
-  `data_location_defines.h`   EEPROM address and flag definitions
+---
 
 ## 🚀 Getting Started
 
 ### 1. Clone the repository
 
-``` bash
-git clone https://github.com/tikheishant/SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM.git
+```bash
+git clone [https://github.com/tikheishant/SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM.git](https://github.com/tikheishant/SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM.git)
 cd SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM
+
 ```
 
-Replace the URL and directory with your actual GitHub repository
-details.
+### 2. Build the Project in Keil µVision
 
-### 2. Open the project
+1. Open **Keil µVision**.
+2. Select **File → Open Project** and locate the `.uvproj` file in the project root.
+3. Ensure the target processor selected is **NXP LPC2148**.
+4. Verify that all source files under `src/` and `apps/` are added to the build target.
+5. Click **Build Target (F7)** to compile and generate the executable `.hex` file.
 
-1.  Open the project in **Keil µVision**.
-2.  Confirm the selected target is **LPC2148**.
-3.  Verify the startup file, device settings, include paths, and
-    source-file list.
-4.  Review pin assignments for the LCD, keypad, RFID UART, I²C EEPROM,
-    and RTC.
-5.  Build the project and resolve toolchain-specific warnings.
+### 3. Flash Firmware
 
-### 3. Connect the hardware
+1. Connect the LPC2148 board to your system using a USB-to-UART converter attached to **UART0**.
+2. Open **Flash Magic**, set the device to `LPC2148`, baud rate to `19200`, and select the generated `.hex` file.
+3. Put the LPC2148 into ISP mode and click **Start** to program the microcontroller.
 
-Connect each module according to the pin assignments in your source code
-and circuit diagram. Confirm voltage levels, power requirements, UART
-settings, I²C addressing, and common ground before powering the circuit.
+> ⚠️ **Important:** Do not execute full EEPROM format/initialization routines on every reboot, as this will reset configured voter records, passwords, and cast vote tallies.
 
-### 4. Program and test
-
-Flash the firmware to the LPC2148 and test in stages: 1. LCD and keypad
-operation 2. RFID reception and card matching 3. Officer authentication
-4. Add, remove, and reactivate voter records 5. Voter authentication and
-password change 6. Vote confirmation and one-vote-per-voter behavior 7.
-EEPROM persistence after power cycling 8. Election timing, result
-display, tie handling, and reset
-
-**Important:** EEPROM initialization routines should not run
-automatically on every startup. They may overwrite credentials, voter
-records, or vote counts. Run initialization only when intentionally
-preparing a fresh test setup.
+---
 
 ## 🧪 Suggested Test Cases
 
--   Valid and invalid officer RFID cards
--   Correct and incorrect officer passwords
--   Add a voter and attempt to add the same ID again
--   Remove a voter and attempt authentication with that card
--   Reactivate a previously removed voter
--   Incorrect voter password
--   Cast a vote and attempt to vote again
--   Verify the selected party count increases by one
--   Change a voter or officer password
--   Test all party selections
--   Test a tie and an election with no votes cast
--   Reset an election and inspect the resulting EEPROM values
--   Check election start/stop behavior around configured times
+* ✔️ **Officer Access:** Test authentication with valid vs. invalid Officer RFID cards and passwords.
+* ✔️ **Voter Duplicate Guard:** Cast a vote for a registered user and attempt to scan the same RFID card again.
+* ✔️ **Voter Removal:** Deactivate a voter record through the Officer menu and attempt to vote with that card.
+* ✔️ **Incorrect Credentials:** Enter incorrect PINs during voter/officer authentication and verify lock-out behavior.
+* ✔️ **Tally & Tie Detection:** Cast equal votes for two candidates and inspect the tie detection output on the Officer results screen.
+* ✔️ **Power Cycle Persistence:** Disconnect power mid-election and verify that vote counts and voter status flags persist in EEPROM upon reboot.
 
-## 🔐 Security and Reliability Considerations
+---
 
-This project demonstrates embedded authentication and state management,
-but these mechanisms alone do **not** establish election-grade security.
+## 📷 System Screenshots & Hardware Setup
 
-Before real-world deployment, the design would need a thorough review
-covering: - Secure storage and protection of credentials - Protection
-against EEPROM modification and physical tampering - Reliable, atomic
-vote updates during power loss - Independent verification and audit
-records - Firmware integrity and controlled updates - Recovery behavior
-for interrupted writes - Privacy, accessibility, and applicable legal
-requirements
+```markdown
+![SecureBallot Hardware Setup](images/hardware-setup.jpg)
+![SecureBallot Proteus Simulation](images/proteus-simulation.png)
 
-Do not use real voter credentials or conduct a real election with this
-prototype.
-
-## 📷 Project Images
-
-Add your own circuit, Proteus simulation, hardware setup, or LCD
-screenshots. Example Markdown:
-
-``` markdown
-![SecureBallot hardware setup](images/hardware-setup.jpg)
-![SecureBallot circuit simulation](images/proteus-simulation.png)
 ```
 
-Create an `images/` folder and replace these example paths with your
-actual image filenames.
+*(Place your images in an `images/` directory within the repository).*
+
+---
 
 ## 🔮 Future Improvements
 
--   Strengthen credential protection
--   Add integrity checks for stored records
--   Improve recovery from power loss during EEPROM writes
--   Add a detailed audit log
--   Add a dedicated election-ended state to prevent unintended restarts
--   Improve result reporting and export
--   Document the complete circuit diagram and pin mapping
--   Add automated tests for EEPROM and voting logic
+* 🔐 **Cryptographic PIN Storage:** Hash voter PINs in EEPROM rather than storing plaintext values.
+* 🧾 **Audit Trail:** Log all voter events with RTC timestamps to an encrypted transaction log.
+* 🔋 **Power Loss Resilience:** Implement atomic double-buffered EEPROM writes to prevent data corruption during mid-write power loss.
+* 🌐 **Wireless Dashboard:** Integrate an ESP32 bridge over UART to broadcast live election status to a remote monitoring site.
+
+---
 
 ## 🎓 Learning Outcomes
 
--   ARM7 LPC2148 peripheral interfacing
--   Embedded C and bare-metal programming
--   UART interrupt handling
--   I²C communication and EEPROM storage
--   GPIO, LCD, and matrix keypad interfacing
--   RTC-based time management
--   State flags and record-based data management
--   Modular firmware development and debugging
+* 🛠️ ARM7 LPC2148 hardware peripheral configuration (UART, I²C, RTC, GPIO).
+* 💾 Low-level I²C protocol handling for external serial EEPROM read/write routines.
+* 📊 Multi-role state machine design for secure embedded applications.
+* 📡 Serial interrupt-driven data acquisition via RFID readers.
+* 🖥️ Modular Embedded C system development and debugging.
+
+---
 
 ## 👨‍💻 Author
 
 **Ishant Tikhe**
 
-Embedded Systems \| ARM7 \| Embedded C \| Microcontroller Interfacing
+* Embedded Systems | ARM7 | Embedded C | Microcontroller Interfacing
+* GitHub: [@tikheishant](https://github.com/tikheishant)
 
--   GitHub: `https://github.com/tikheishant`
+---
 
-## 📄 License
-
-Add a `LICENSE` file if you intend to permit reuse of this project.
-Without a license, others do not automatically receive permission to
-reuse, modify, or distribute the code.
-
-------------------------------------------------------------------------
-
-**SecureBallot --- Learn, Build, Test, and Improve Embedded Systems.**
-
+**Built with ❤️ on ARM7 | LPC2148 | Embedded C**
