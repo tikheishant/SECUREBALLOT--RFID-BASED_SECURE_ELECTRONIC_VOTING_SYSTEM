@@ -358,4 +358,8 @@ cd SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM
 
 ---
 
+<div align="center">
+
 **Built with ❤️ on ARM7 | LPC2148 | Embedded C**
+
+</div>
