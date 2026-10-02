@@ -187,8 +187,8 @@ Module names may differ depending on the final source-tree organization.
 ### 1. Clone the repository
 
 ``` bash
-git clone https://github.com/<your-username>/<your-repository>.git
-cd <your-repository>
+git clone https://github.com/tikheishant/SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM.git
+cd SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM
 ```
 
 Replace the URL and directory with your actual GitHub repository
@@ -297,7 +297,7 @@ actual image filenames.
 
 Embedded Systems \| ARM7 \| Embedded C \| Microcontroller Interfacing
 
--   GitHub: `https://github.com/<your-username>`
+-   GitHub: `https://github.com/tikheishant`
 
 ## 📄 License
 
