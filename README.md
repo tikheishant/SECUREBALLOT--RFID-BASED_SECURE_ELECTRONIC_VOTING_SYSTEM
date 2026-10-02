@@ -279,33 +279,6 @@ Mark Voter as Already Voted
 
 ---
 
-## 🚀 Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone [https://github.com/tikheishant/SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM.git](https://github.com/tikheishant/SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM.git)
-cd SECUREBALLOT--RFID-BASED_SECURE_ELECTRONIC_VOTING_SYSTEM
-
-```
-
-### 2. Build the Project in Keil µVision
-
-1. Open **Keil µVision**.
-2. Select **File → Open Project** and locate the `.uvproj` file in the project root.
-3. Ensure the target processor selected is **NXP LPC2148**.
-4. Verify that all source files under `src/` and `apps/` are added to the build target.
-5. Click **Build Target (F7)** to compile and generate the executable `.hex` file.
-
-### 3. Flash Firmware
-
-1. Connect the LPC2148 board to your system using a USB-to-UART converter attached to **UART0**.
-2. Open **Flash Magic**, set the device to `LPC2148`, baud rate to `19200`, and select the generated `.hex` file.
-3. Put the LPC2148 into ISP mode and click **Start** to program the microcontroller.
-
-> ⚠️ **Important:** Do not execute full EEPROM format/initialization routines on every reboot, as this will reset configured voter records, passwords, and cast vote tallies.
-
----
 
 ## 🧪 Suggested Test Cases
 
