@@ -1,7 +1,4 @@
 
-# SECURE_BALLOT_RFID_ELECTRONIC_VOTING_SYSTEM
-To develop a secure, automated, and tamper-resistant RFID-based Electronic Voting System (EVS) using the ARM7 LPC2148 microcontroller, providing separate authenticated interfaces for Election Officers and Voters with persistent I²C EEPROM storage and real-time election timing.
-
 <div align="center">
 
 # 🗳️️ SecureBallot — RFID-Based Electronic Voting System
