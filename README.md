@@ -128,11 +128,11 @@ v
 
 | Peripheral | LPC2148 Pin | Function / Target Line |
 |---|---|---|
-| **UART1 (RFID)** | P0.8 / RxD1 | Connected to EM-18 TX pin |
+| **UART1 (RFID)** | P0.9 / RxD1 | Connected to EM-18 TX pin |
 | **UART0 (Logging)** | P0.0 / TxD0 | Serial terminal output (9600 baud) |
 | **I²C0 (EEPROM)** | P0.2 / SCL0 | Serial Clock for AT24C256 |
 | | P0.3 / SDA0 | Serial Data for AT24C256 |
-| **20x4 LCD** | P0.8 – P0.15 | LCD 8-bit Data Bus (D0–D7) |
+| **20x4 LCD** | P1.24 – P1.31 | LCD 8-bit Data Bus (D0–D7) |
 | | P0.16 | LCD Register Select (RS) |
 | | P0.17 | LCD Enable (EN) |
 | **4x4 Keypad** | P1.16 – P1.19 | Keypad Row Outputs (Row 0 – Row 3) |
